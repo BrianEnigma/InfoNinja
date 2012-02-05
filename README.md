@@ -12,22 +12,22 @@ TODO: write stuff here
     - Wire
     - etc.
 2. Obtain electronics parts
-    - Arduino Ethernet <http://www.adafruit.com/products/418>
-    - RGB LCD <http://www.adafruit.com/products/499>
-    - Contrast knob (10K panel-mount potentiometer) <http://www.adafruit.com/products/562>
-    - Red button <http://www.adafruit.com/products/559>
-    - Green button <http://www.adafruit.com/products/560>
-    - White button <http://www.adafruit.com/products/558>
-    - FTDI Friend (for programming) <https://www.adafruit.com/products/284>
-    - Mini-USB cable
+    - [Arduino Ethernet](http://www.adafruit.com/products/418)
+    - [20x4 RGB LCD](http://www.adafruit.com/products/499)
+    - [Contrast knob](http://www.adafruit.com/products/562) (10K panel-mount potentiometer)
+    - [Red LED pushbutton](http://www.adafruit.com/products/559)
+    - [Green LED pushbutton](http://www.adafruit.com/products/560)
+    - [White LED pushbutton](http://www.adafruit.com/products/558)
     - Ethernet cable
+    - [FTDI Friend](https://www.adafruit.com/products/284) (for programming)
+    - Mini-USB cable (for programming)
 3. Obtain hardware
-    - 16M3 screws
-    - 16M3 nuts
-    - xxx screws
-    - xxx nuts
-    - spacers
-    - Feet
+    - [16M3 screws](http://www.mcmaster.com/#catalog/118/3119/=g3zuj5)
+    - [16M3 nuts](http://www.mcmaster.com/#catalog/118/3193/=g3zujt)
+    - [10M2 screws](http://www.mcmaster.com/#catalog/118/3119/=g3zswt)
+    - [10M2 nuts](http://www.mcmaster.com/#catalog/118/3193/=g3zswk)
+    - [8M3 Spacers](http://www.mcmaster.com/#93657A143)
+    - [Rubber feet](http://www.mcmaster.com/#9540K51)
 4. Obtain laser-cut parts
     - TODO: link to Thingiverse files
 5. Obtain the 3rd party webserver library for the Arduino, [Webduino]
