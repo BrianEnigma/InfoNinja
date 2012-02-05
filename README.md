@@ -30,6 +30,11 @@ TODO: write stuff here
     - Feet
 4. Obtain laser-cut parts
     - TODO: link to Thingiverse files
+5. Obtain the 3rd party webserver library for the Arduino, [Webduino]
+    - Create a "libraries" folder in your Arduino sketch folder.  For me, this means creating a folder named "libraries" in "~/Documents/Arduino"
+    - Using your git tool of choice, check out https://github.com/sirleech/Webduino.git into that "libraries" folder.
+
+[Webduino]: https://github.com/sirleech/Webduino
 
 ##Assembly
 
