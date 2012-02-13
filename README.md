@@ -22,12 +22,12 @@ TODO: write stuff here
     - [FTDI Friend](https://www.adafruit.com/products/284) (for programming)
     - Mini-USB cable (for programming)
 3. Obtain hardware
-    - [16M3 screws](http://www.mcmaster.com/#catalog/118/3119/=g3zuj5)
-    - [16M3 nuts](http://www.mcmaster.com/#catalog/118/3193/=g3zujt)
-    - [10M2 screws](http://www.mcmaster.com/#catalog/118/3119/=g3zswt)
-    - [10M2 nuts](http://www.mcmaster.com/#catalog/118/3193/=g3zswk)
-    - [8M3 Spacers](http://www.mcmaster.com/#93657A143)
-    - [Rubber feet](http://www.mcmaster.com/#9540K51)
+    - [16M3 screws](http://www.mcmaster.com/#91290A120), #91290A120
+    - [M3 nuts](http://www.mcmaster.com/#98676A100), #98676A100
+    - [10M2 screws](http://www.mcmaster.com/#91290A017), #91290A017
+    - [M2 nuts](http://www.mcmaster.com/#90591A111), #90591A111
+    - [8M3 Spacers](http://www.mcmaster.com/#93657A143), #93657A143
+    - [Rubber feet](http://www.mcmaster.com/#9540K51), #9540K51
 4. Obtain laser-cut parts
     - TODO: link to Thingiverse files
 5. Obtain the 3rd party webserver library for the Arduino, [Webduino]
