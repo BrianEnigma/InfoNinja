@@ -341,25 +341,28 @@ int blinkModeLastTime = 0;
 unsigned char adjustBlink()
 {
     unsigned int now;
+    unsigned int activeBlinkMode = blinkMode;
+    if (staleCounter >= STALE_MAX_SECONDS)
+        activeBlinkMode = BLINK_MODE_FADE_BLUE;
     
-    if (blinkMode == BLINK_MODE_NONE && staleCounter < STALE_MAX_SECONDS)
+    if (activeBlinkMode == BLINK_MODE_NONE)
     {
         // restore background?
         return 0;
     }
     // Blinks are simple
-    if (BLINK_MODE_FLASH_YELLOW == blinkMode || BLINK_MODE_FLASH_RED == blinkMode || BLINK_MODE_FLASH_BLUE == blinkMode)
+    if (BLINK_MODE_FLASH_YELLOW == activeBlinkMode || BLINK_MODE_FLASH_RED == activeBlinkMode || BLINK_MODE_FLASH_BLUE == activeBlinkMode)
     {
         unsigned int now = (millis() / 1000) % 10;
         if (blinkModeLastTime == now)
             return 0; // Operate only every second
         blinkModeLastTime = now;
-        if (BLINK_MODE_FLASH_YELLOW == blinkMode)
+        if (BLINK_MODE_FLASH_YELLOW == activeBlinkMode)
         {
             backlightRed = (backlightRed == 255) ? 128 : 255;
             backlightGreen = (backlightGreen == 255) ? 128 : 255;
             backlightBlue = 0;
-        } else if (BLINK_MODE_FLASH_RED == blinkMode) {
+        } else if (BLINK_MODE_FLASH_RED == activeBlinkMode) {
             backlightRed = (backlightRed == 255) ? 128 : 255;
             backlightGreen = 0;
             backlightBlue = 0;
@@ -370,12 +373,12 @@ unsigned char adjustBlink()
         }
     }
     // Fades have more complexity and state
-    if (BLINK_MODE_FADE_YELLOW == blinkMode || BLINK_MODE_FADE_RED == blinkMode || BLINK_MODE_FADE_BLUE == blinkMode || staleCounter >= STALE_MAX_SECONDS)
+    if (BLINK_MODE_FADE_YELLOW == activeBlinkMode || BLINK_MODE_FADE_RED == activeBlinkMode || BLINK_MODE_FADE_BLUE == activeBlinkMode)
     {
         unsigned int now = (millis() / 100);// % 10;
         if (blinkModeLastTime == now)
             return 0;
-        if (BLINK_MODE_FADE_YELLOW == blinkMode)
+        if (BLINK_MODE_FADE_YELLOW == activeBlinkMode)
         {
             // fade
             if (blinkDirection == 1 && backlightRed < 255)
@@ -392,7 +395,7 @@ unsigned char adjustBlink()
             else if (blinkDirection == 0 && backlightRed <= 127 && backlightGreen <= 127)
                 blinkDirection = 1;
             backlightBlue = 0;
-        } else if (BLINK_MODE_FADE_RED == blinkMode) {
+        } else if (BLINK_MODE_FADE_RED == activeBlinkMode) {
             if (blinkDirection == 1 && backlightRed < 255)
                 backlightRed = backlightRed + 1; //- backlightRed % 5 + 5;
             else if (blinkDirection == 1 && backlightRed == 255)
