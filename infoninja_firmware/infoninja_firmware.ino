@@ -122,6 +122,22 @@ unsigned char securityValid(WebServer &server, WebServer::ConnectionType type, c
     return 1;
 }
 
+char unescape(char *hexcode)
+{
+    char result = 0;
+    for (int i = 0; i < 2; i++)
+    {
+        if (*hexcode >= '0' && *hexcode <= '9')
+            result = result * 16 + *hexcode - '0';
+        else if (*hexcode >= 'a' && *hexcode <= 'f')
+            result = result * 16 + *hexcode - 'a' + 10;
+        else if (*hexcode >= 'A' && *hexcode <= 'F')
+            result = result * 16 + *hexcode - 'A' + 10;
+        hexcode += 1;
+    }
+    return result;
+}
+
 // http://a.b.c.d/print?1/My_Message
 void printCmd(WebServer &server, WebServer::ConnectionType type, char *url_tail, bool tail_complete)
 {
@@ -133,8 +149,23 @@ void printCmd(WebServer &server, WebServer::ConnectionType type, char *url_tail,
         int lineNumber = url_tail[0] - '0';
         if (lineNumber >= 0 && lineNumber <= 3)
         {
+            char newValue[21] = {0};
+            char *pos = url_tail + 2, *pos2 = &newValue[0];
+            while (*pos && strlen(newValue) < 20)
+            {
+                if (*pos == '%' && *(pos + 1) != 0x00 && *(pos + 2) != 0)
+                {
+                    *pos2 = unescape(pos + 1);
+                    pos += 3;
+                    pos2 += 1;
+                } else {
+                    *pos2 = *pos;
+                    pos += 1;
+                    pos2 += 1;
+                }
+            }
             lcd.setCursor(0, lineNumber); lcd.print("                    ");
-            lcd.setCursor(0, lineNumber); lcd.print(url_tail + 2);
+            lcd.setCursor(0, lineNumber); lcd.print(newValue);
             if (3 == lineNumber)
                 wroteLcdLine4 = 1;
             P(helloMsg) = "<h1>GOOD</h1>";
@@ -167,6 +198,7 @@ void lcdColorCmd(WebServer &server, WebServer::ConnectionType type, char *url_ta
             backlightRed = red;
             backlightGreen = green;
             backlightBlue = blue;
+            blinkMode = blinkModePrevious = BLINK_MODE_NONE;
             P(helloMsg) = "<h1>GOOD</h1>";
             server.printP(helloMsg);
         } else {
@@ -278,6 +310,8 @@ void setup()
     debounceGreen.update();
     debounceWhite.update();
     debounceRed.update();
+    //Serial.begin(9600);
+    //Serial.println("DEBUG START");
 }
 
 void toggleBacklight()
@@ -340,8 +374,8 @@ int blinkModeLastTime = 0;
 
 unsigned char adjustBlink()
 {
-    unsigned int now;
-    unsigned int activeBlinkMode = blinkMode;
+    unsigned int now = 0;
+    unsigned char activeBlinkMode = blinkMode;
     if (staleCounter >= STALE_MAX_SECONDS)
         activeBlinkMode = BLINK_MODE_FADE_BLUE;
     
@@ -353,7 +387,7 @@ unsigned char adjustBlink()
     // Blinks are simple
     if (BLINK_MODE_FLASH_YELLOW == activeBlinkMode || BLINK_MODE_FLASH_RED == activeBlinkMode || BLINK_MODE_FLASH_BLUE == activeBlinkMode)
     {
-        unsigned int now = (millis() / 1000) % 10;
+        now = (millis() / 1000) % 10;
         if (blinkModeLastTime == now)
             return 0; // Operate only every second
         blinkModeLastTime = now;
@@ -375,20 +409,22 @@ unsigned char adjustBlink()
     // Fades have more complexity and state
     if (BLINK_MODE_FADE_YELLOW == activeBlinkMode || BLINK_MODE_FADE_RED == activeBlinkMode || BLINK_MODE_FADE_BLUE == activeBlinkMode)
     {
-        unsigned int now = (millis() / 100);// % 10;
+        now = (millis() / 10);
         if (blinkModeLastTime == now)
             return 0;
+        //Serial.println(now);
+        blinkModeLastTime = now;
         if (BLINK_MODE_FADE_YELLOW == activeBlinkMode)
         {
             // fade
             if (blinkDirection == 1 && backlightRed < 255)
-                backlightRed = backlightRed + 1; //- backlightRed *% 5* + 5;
+                backlightRed = backlightRed + 1;
             else if (blinkDirection == 0 && backlightRed > 127)
-                backlightRed = backlightRed - 1; //- backlightRed % 5 - 5;
+                backlightRed = backlightRed - 1;
             if (blinkDirection == 1 && backlightGreen < 255)
-                backlightGreen = backlightGreen + 1; //- backlightGreen % 5 + 5;
+                backlightGreen = backlightGreen + 1;
             else if (blinkDirection == 0 && backlightGreen > 127)
-                backlightGreen = backlightGreen - 1; //- backlightGreen % 5 - 5;
+                backlightGreen = backlightGreen - 1;
             // switch                 
             if (blinkDirection == 1 && backlightRed == 255 && backlightGreen == 255)
                 blinkDirection = 0;
@@ -397,27 +433,29 @@ unsigned char adjustBlink()
             backlightBlue = 0;
         } else if (BLINK_MODE_FADE_RED == activeBlinkMode) {
             if (blinkDirection == 1 && backlightRed < 255)
-                backlightRed = backlightRed + 1; //- backlightRed % 5 + 5;
+                backlightRed = backlightRed + 1;
             else if (blinkDirection == 1 && backlightRed == 255)
                 blinkDirection = 0;
             else if (blinkDirection == 0 && backlightRed > 127)
-                backlightRed = backlightRed - 1; //- backlightRed % 5 - 5;
+                backlightRed = backlightRed - 1;
             else if (blinkDirection == 0 && backlightRed <= 127)
                 blinkDirection = 1;
             backlightGreen = 0;
             backlightBlue = 0;
         } else { // blue and/or stale
             if (blinkDirection == 1 && backlightBlue < 255)
-                backlightBlue = backlightBlue + 1; //- backlightBlue % 5 + 5;
+                backlightBlue = backlightBlue + 1;
             else if (blinkDirection == 1 && backlightBlue == 255)
                 blinkDirection = 0;
             else if (blinkDirection == 0 && backlightBlue > 127)
-                backlightBlue = backlightBlue - 1; //- backlightRed % 5 - 5;
+                backlightBlue = backlightBlue - 1;
             else if (blinkDirection == 0 && backlightBlue <= 127)
                 blinkDirection = 1;
             backlightGreen = 32;
             backlightRed = 32;
         }
+        //Serial.print(blinkMode); Serial.print(":"); Serial.print(activeBlinkMode); Serial.print(":"); Serial.print(blinkDirection); Serial.print(":");
+        //Serial.print(backlightRed); Serial.print(","); Serial.print(backlightGreen); Serial.print(","); Serial.println(backlightBlue);
     }
     return 1;
 }
