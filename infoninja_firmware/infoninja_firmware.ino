@@ -23,16 +23,21 @@ const int numRows = 4;
 #define STARTUP_LINE_3 "--------------------"
 #define STARTUP_LINE_4 "Obtaining IP address"
 
-// State info
+// General state info
+// (state info for specific features are near their associated functions)
 unsigned char wroteLcdLine4 = 0;
 unsigned char backlightOn = 1;
 int backlightRed = 255;
 int backlightGreen = 255;
 int backlightBlue = 255;
-unsigned char demoTimer = 0;
-unsigned char inDemo = 0; // 0 = not in demo mode, any other value is a demo mode state
-int teaTimerValue = -1; // -1 = not in tea timer mode, any other value is the current time
-int teaTimerLastSecond = 0;
+unsigned char blinkMode = 0;
+#define BLINK_MODE_NONE 0
+#define BLINK_MODE_FLASH_YELLOW 1
+#define BLINK_MODE_FLASH_RED 2
+#define BLINK_MODE_FADE_YELLOW 3
+#define BLINK_MODE_FADE_RED 4
+#define BLINK_MODE_INVALID 5
+unsigned char blinkDirection = 0; // 0=down, 1=up -- mainly for fades, not blinks
 
 // GPIO pins
 #define LCD_D4     A5
@@ -144,6 +149,33 @@ void buttonLedCmd(WebServer &server, WebServer::ConnectionType type, char *url_t
         digitalWrite(BUTTON_RED_GREEN_LED, url_tail[0] == '1' ? HIGH : LOW);
         P(helloMsg) = "<h1>GOOD</h1>";
         server.printP(helloMsg);
+    } else {
+        P(helloMsg) = "<h1>ERROR</h1>";
+        server.printP(helloMsg);
+    }
+}
+
+// http://a.b.c.d/blinkmode?x
+void blinkModeCmd(WebServer &server, WebServer::ConnectionType type, char *url_tail, bool tail_complete)
+{
+    server.httpSuccess();
+    // TODO: check security?
+    if (type != WebServer::HEAD && strlen(url_tail) >= 1)
+    {
+        unsigned char value = url_tail[0] - '0';
+        if (value >= BLINK_MODE_NONE && value < BLINK_MODE_INVALID)
+        {
+            blinkMode = value;
+            blinkDirection = 1;
+            P(helloMsg) = "<h1>GOOD</h1>";
+            server.printP(helloMsg);
+        } else {
+            P(helloMsg) = "<h1>ERROR</h1>";
+            server.printP(helloMsg);
+        }
+    } else {
+        P(helloMsg) = "<h1>ERROR</h1>";
+        server.printP(helloMsg);
     }
 }
 
@@ -199,6 +231,7 @@ void setup()
     webserver.addCommand("print", &printCmd); 
     webserver.addCommand("lcdcolor", &lcdColorCmd); 
     webserver.addCommand("buttonled", &buttonLedCmd); 
+    webserver.addCommand("blinkmode", &blinkModeCmd); 
     webserver.begin();
     
     debounceGreen.update();
@@ -222,6 +255,9 @@ void toggleBacklight()
     }
 }
 
+unsigned char demoTimer = 0;
+unsigned char inDemo = 0; // 0 = not in demo mode, any other value is a demo mode state
+
 void demo()
 {
     unsigned int now = (millis() / 1000) % 10;
@@ -234,6 +270,9 @@ void demo()
     analogWrite(LCD_BLUE,  random(255));
     digitalWrite(BUTTON_RED_GREEN_LED, demoTimer % 2 == 0 ? HIGH : LOW);
 }
+
+int teaTimerValue = -1; // -1 = not in tea timer mode, any other value is the current time
+int teaTimerLastSecond = 0;
 
 void doTeaTimer()
 {
@@ -255,6 +294,80 @@ void doTeaTimer()
     lcd.write(teaTimerValue % 60 / 10 + '0');
     lcd.write(teaTimerValue % 10 + '0');
 }
+
+int blinkModeLastTime = 0;
+
+void adjustBlink()
+{
+    unsigned int now;
+    
+    if (blinkMode == BLINK_MODE_NONE)
+    {
+        // restore background?
+        return;
+    }
+    if (BLINK_MODE_FLASH_YELLOW == blinkMode || BLINK_MODE_FLASH_RED == blinkMode)
+    {
+        unsigned int now = (millis() / 1000) % 10;
+        if (blinkModeLastTime == now)
+            return; // Operate only every second
+         blinkModeLastTime = now;
+         if (BLINK_MODE_FLASH_YELLOW == blinkMode)
+         {
+             backlightRed = (backlightRed == 255) ? 128 : 255;
+             backlightGreen = (backlightGreen == 255) ? 128 : 255;
+             backlightBlue = 0;
+         } else { // red
+             backlightRed = (backlightRed == 255) ? 128 : 255;
+             backlightGreen = 0;
+             backlightBlue = 0;
+         }
+    }
+    if (BLINK_MODE_FADE_YELLOW == blinkMode || BLINK_MODE_FADE_RED == blinkMode)
+    {
+        unsigned int now = (millis() / 10) % 10;
+        if (blinkModeLastTime == now)
+            return;
+         if (BLINK_MODE_FADE_YELLOW == blinkMode)
+         {
+             // fade
+             if (blinkDirection == 1 && backlightRed < 255)
+                 backlightRed = backlightRed - backlightRed % 5 + 5;
+             else if (blinkDirection == 0 && backlightRed > 127)
+                 backlightRed = backlightRed - backlightRed % 5 - 5;
+             if (blinkDirection == 1 && backlightGreen < 255)
+                 backlightGreen = backlightGreen - backlightGreen % 5 + 5;
+             else if (blinkDirection == 0 && backlightGreen > 127)
+                 backlightGreen = backlightGreen - backlightGreen % 5 - 5;
+             // switch                 
+             if (blinkDirection == 1 && backlightRed == 255 && backlightGreen == 255)
+                 blinkDirection = 0;
+             else if (blinkDirection == 0 && backlightRed <= 127 && backlightGreen <= 127)
+                 blinkDirection = 1;
+             backlightBlue = 0;
+         } else { // red
+             if (blinkDirection == 1 && backlightRed < 255)
+                 backlightRed = backlightRed - backlightRed % 5 + 5;
+             else if (blinkDirection == 1 && backlightRed == 255)
+                 blinkDirection = 0;
+             else if (blinkDirection == 0 && backlightRed > 127)
+                 backlightRed = backlightRed - backlightRed % 5 - 5;
+             else if (blinkDirection == 0 && backlightRed <= 127)
+                 blinkDirection = 1;
+             backlightGreen = 0;
+             backlightBlue = 0;
+         }
+    }
+}
+
+void doBlink()
+{
+    adjustBlink();
+    analogWrite(LCD_RED,   random(255));
+    analogWrite(LCD_GREEN, random(255));
+    analogWrite(LCD_BLUE,  random(255));
+}
+
 
 void loop()
 {
@@ -310,8 +423,10 @@ void loop()
             lcd.setCursor(0, 3);
             lcd.print(Ethernet.localIP());
         }
+        doBlink();
         
         // Print buttons
+#if 0
         lcd.setCursor(17, 3);
         if (digitalRead(BUTTON_GREEN))
             lcd.write('_');
@@ -325,6 +440,7 @@ void loop()
             lcd.write('_');
         else
             lcd.write('*');
+#endif
     
         buff[0] = 0;
         webserver.processConnection(buff, &len);
