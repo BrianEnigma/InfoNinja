@@ -31,6 +31,7 @@ int backlightRed = 255;
 int backlightGreen = 255;
 int backlightBlue = 255;
 unsigned char blinkMode = 0;
+unsigned char blinkModePrevious = 0;
 #define BLINK_MODE_NONE 0
 #define BLINK_MODE_FLASH_YELLOW 1
 #define BLINK_MODE_FLASH_RED 2
@@ -165,6 +166,7 @@ void blinkModeCmd(WebServer &server, WebServer::ConnectionType type, char *url_t
         unsigned char value = url_tail[0] - '0';
         if (value >= BLINK_MODE_NONE && value < BLINK_MODE_INVALID)
         {
+            blinkModePrevious = blinkMode;
             blinkMode = value;
             blinkDirection = 1;
             P(helloMsg) = "<h1>GOOD</h1>";
@@ -297,20 +299,21 @@ void doTeaTimer()
 
 int blinkModeLastTime = 0;
 
-void adjustBlink()
+unsigned char adjustBlink()
 {
     unsigned int now;
     
     if (blinkMode == BLINK_MODE_NONE)
     {
         // restore background?
-        return;
+        return 0;
     }
+    // Blinks are simple
     if (BLINK_MODE_FLASH_YELLOW == blinkMode || BLINK_MODE_FLASH_RED == blinkMode)
     {
         unsigned int now = (millis() / 1000) % 10;
         if (blinkModeLastTime == now)
-            return; // Operate only every second
+            return 0; // Operate only every second
          blinkModeLastTime = now;
          if (BLINK_MODE_FLASH_YELLOW == blinkMode)
          {
@@ -323,22 +326,23 @@ void adjustBlink()
              backlightBlue = 0;
          }
     }
+    // Fades have more complexity and state
     if (BLINK_MODE_FADE_YELLOW == blinkMode || BLINK_MODE_FADE_RED == blinkMode)
     {
-        unsigned int now = (millis() / 10) % 10;
+        unsigned int now = (millis() / 100);// % 10;
         if (blinkModeLastTime == now)
-            return;
+            return 0;
          if (BLINK_MODE_FADE_YELLOW == blinkMode)
          {
              // fade
              if (blinkDirection == 1 && backlightRed < 255)
-                 backlightRed = backlightRed - backlightRed % 5 + 5;
+                 backlightRed = backlightRed + 1; //- backlightRed *% 5* + 5;
              else if (blinkDirection == 0 && backlightRed > 127)
-                 backlightRed = backlightRed - backlightRed % 5 - 5;
+                 backlightRed = backlightRed - 1; //- backlightRed % 5 - 5;
              if (blinkDirection == 1 && backlightGreen < 255)
-                 backlightGreen = backlightGreen - backlightGreen % 5 + 5;
+                 backlightGreen = backlightGreen + 1; //- backlightGreen % 5 + 5;
              else if (blinkDirection == 0 && backlightGreen > 127)
-                 backlightGreen = backlightGreen - backlightGreen % 5 - 5;
+                 backlightGreen = backlightGreen - 1; //- backlightGreen % 5 - 5;
              // switch                 
              if (blinkDirection == 1 && backlightRed == 255 && backlightGreen == 255)
                  blinkDirection = 0;
@@ -347,25 +351,42 @@ void adjustBlink()
              backlightBlue = 0;
          } else { // red
              if (blinkDirection == 1 && backlightRed < 255)
-                 backlightRed = backlightRed - backlightRed % 5 + 5;
+                 backlightRed = backlightRed + 1; //- backlightRed % 5 + 5;
              else if (blinkDirection == 1 && backlightRed == 255)
                  blinkDirection = 0;
              else if (blinkDirection == 0 && backlightRed > 127)
-                 backlightRed = backlightRed - backlightRed % 5 - 5;
+                 backlightRed = backlightRed - 1; //- backlightRed % 5 - 5;
              else if (blinkDirection == 0 && backlightRed <= 127)
                  blinkDirection = 1;
              backlightGreen = 0;
              backlightBlue = 0;
          }
     }
+    return 1;
 }
 
 void doBlink()
 {
-    adjustBlink();
-    analogWrite(LCD_RED,   random(255));
-    analogWrite(LCD_GREEN, random(255));
-    analogWrite(LCD_BLUE,  random(255));
+    unsigned char rc = adjustBlink();
+    
+    // If iw as just now disabled, reset the LCD state
+    if (blinkModePrevious != blinkMode && BLINK_MODE_NONE == blinkMode)
+    {
+        rc = 0;
+        // Make white
+        backlightRed = backlightGreen = backlightBlue = 255;
+        // Restore to previous backlight enabled/disabled state
+        toggleBacklight();
+        toggleBacklight();
+    }
+    
+    // If it changed update
+    if (rc)
+    {
+        analogWrite(LCD_RED,   255 - backlightRed);
+        analogWrite(LCD_GREEN, 255 - backlightGreen);
+        analogWrite(LCD_BLUE,  255 - backlightBlue);
+    }
 }
 
 
