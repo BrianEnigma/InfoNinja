@@ -367,8 +367,8 @@ unsigned char adjustBlink()
             backlightGreen = 0;
             backlightBlue = 0;
         } else  { // blue
-            backlightRed = 64;
-            backlightGreen = 64;
+            backlightRed = 32;
+            backlightGreen = 32;
             backlightBlue = (backlightBlue == 255) ? 128 : 255;
         }
     }
@@ -415,8 +415,8 @@ unsigned char adjustBlink()
                 backlightBlue = backlightBlue - 1; //- backlightRed % 5 - 5;
             else if (blinkDirection == 0 && backlightBlue <= 127)
                 blinkDirection = 1;
-            backlightGreen = 64;
-            backlightRed = 64;
+            backlightGreen = 32;
+            backlightRed = 32;
         }
     }
     return 1;
