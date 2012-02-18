@@ -35,10 +35,16 @@ unsigned char blinkModePrevious = 0;
 #define BLINK_MODE_NONE 0
 #define BLINK_MODE_FLASH_YELLOW 1
 #define BLINK_MODE_FLASH_RED 2
-#define BLINK_MODE_FADE_YELLOW 3
-#define BLINK_MODE_FADE_RED 4
-#define BLINK_MODE_INVALID 5
+#define BLINK_MODE_FLASH_BLUE 3
+#define BLINK_MODE_FADE_YELLOW 4
+#define BLINK_MODE_FADE_RED 5
+#define BLINK_MODE_FADE_BLUE 6
+#define BLINK_MODE_INVALID 7
 unsigned char blinkDirection = 0; // 0=down, 1=up -- mainly for fades, not blinks
+unsigned char buttonLedBlink = 0; // 0 = off, 1 = blinking, lighted, 2 = blinking, unlighted
+unsigned char staleCounter = 0;   // number of seconds since last [valid] server request
+#define STALE_MAX_SECONDS 70      // complain (blink blue) if no contact in this amount of time
+unsigned char staleTriggered = 0; // When transitioning from 1 to 0, reset LCD backlight state
 
 // GPIO pins
 #define LCD_D4     A5
@@ -88,11 +94,40 @@ void helloCmd(WebServer &server, WebServer::ConnectionType type, char *url_tail,
     }
 }
 
+IPAddress whitelistedIP(0,0,0,0);
+
+unsigned char securityValid(WebServer &server, WebServer::ConnectionType type, char *url_tail, bool tail_complete)
+{
+    // If/when WebServer exposes the client IP address, we can store the very first
+    // connection's IP address here, then only accept future connections from
+    // that IP.
+    //
+    // Unfortunatly, this requires monkeypatching the Arduino Ethernet library followed
+    // by exposing that IP in the Webduino library.
+    
+    // If the whitelisted IP variable is empty, whitelist the current one
+    if (whitelistedIP == INADDR_NONE)
+    {
+        //whitelistedIP = (remote IP address returned from server)
+    }
+    
+    if (0 /* whitelistedIP != (remote IP address returned from server) */) // this would be an IP address comparison
+    {
+        P(helloMsg) = "<h1>FAIL: YOUR IP IS NOT WHITELISTED</h1>";
+        server.printP(helloMsg);
+        return 0;
+    } else {
+        staleCounter = 0; // ONLY reset upon valid connection
+    }
+    return 1;
+}
+
 // http://a.b.c.d/print?1/My_Message
 void printCmd(WebServer &server, WebServer::ConnectionType type, char *url_tail, bool tail_complete)
 {
     server.httpSuccess();
-    // TODO: check security?
+    if (!securityValid(server, type, url_tail, tail_complete))
+        return;
     if (type != WebServer::HEAD && strlen(url_tail) >= 3)
     {
         int lineNumber = url_tail[0] - '0';
@@ -115,7 +150,8 @@ void printCmd(WebServer &server, WebServer::ConnectionType type, char *url_tail,
 void lcdColorCmd(WebServer &server, WebServer::ConnectionType type, char *url_tail, bool tail_complete)
 {
     server.httpSuccess();
-    // TODO: check security?
+    if (!securityValid(server, type, url_tail, tail_complete))
+        return;
     if (type != WebServer::HEAD && strlen(url_tail) >= 9)
     {
         int red = 0, green = 0, blue = 0;
@@ -144,10 +180,12 @@ void lcdColorCmd(WebServer &server, WebServer::ConnectionType type, char *url_ta
 void buttonLedCmd(WebServer &server, WebServer::ConnectionType type, char *url_tail, bool tail_complete)
 {
     server.httpSuccess();
-    // TODO: check security?
+    if (!securityValid(server, type, url_tail, tail_complete))
+        return;
     if (type != WebServer::HEAD && strlen(url_tail) >= 1)
     {
-        digitalWrite(BUTTON_RED_GREEN_LED, url_tail[0] == '1' ? HIGH : LOW);
+        buttonLedBlink = url_tail[0] == '2' ? 1 : 0;
+        digitalWrite(BUTTON_RED_GREEN_LED, url_tail[0] == '0' ? LOW: HIGH);
         P(helloMsg) = "<h1>GOOD</h1>";
         server.printP(helloMsg);
     } else {
@@ -160,7 +198,8 @@ void buttonLedCmd(WebServer &server, WebServer::ConnectionType type, char *url_t
 void blinkModeCmd(WebServer &server, WebServer::ConnectionType type, char *url_tail, bool tail_complete)
 {
     server.httpSuccess();
-    // TODO: check security?
+    if (!securityValid(server, type, url_tail, tail_complete))
+        return;
     if (type != WebServer::HEAD && strlen(url_tail) >= 1)
     {
         unsigned char value = url_tail[0] - '0';
@@ -303,64 +342,79 @@ unsigned char adjustBlink()
 {
     unsigned int now;
     
-    if (blinkMode == BLINK_MODE_NONE)
+    if (blinkMode == BLINK_MODE_NONE && staleCounter < STALE_MAX_SECONDS)
     {
         // restore background?
         return 0;
     }
     // Blinks are simple
-    if (BLINK_MODE_FLASH_YELLOW == blinkMode || BLINK_MODE_FLASH_RED == blinkMode)
+    if (BLINK_MODE_FLASH_YELLOW == blinkMode || BLINK_MODE_FLASH_RED == blinkMode || BLINK_MODE_FLASH_BLUE == blinkMode)
     {
         unsigned int now = (millis() / 1000) % 10;
         if (blinkModeLastTime == now)
             return 0; // Operate only every second
-         blinkModeLastTime = now;
-         if (BLINK_MODE_FLASH_YELLOW == blinkMode)
-         {
-             backlightRed = (backlightRed == 255) ? 128 : 255;
-             backlightGreen = (backlightGreen == 255) ? 128 : 255;
-             backlightBlue = 0;
-         } else { // red
-             backlightRed = (backlightRed == 255) ? 128 : 255;
-             backlightGreen = 0;
-             backlightBlue = 0;
-         }
+        blinkModeLastTime = now;
+        if (BLINK_MODE_FLASH_YELLOW == blinkMode)
+        {
+            backlightRed = (backlightRed == 255) ? 128 : 255;
+            backlightGreen = (backlightGreen == 255) ? 128 : 255;
+            backlightBlue = 0;
+        } else if (BLINK_MODE_FLASH_RED == blinkMode) {
+            backlightRed = (backlightRed == 255) ? 128 : 255;
+            backlightGreen = 0;
+            backlightBlue = 0;
+        } else  { // blue
+            backlightRed = 64;
+            backlightGreen = 64;
+            backlightBlue = (backlightBlue == 255) ? 128 : 255;
+        }
     }
     // Fades have more complexity and state
-    if (BLINK_MODE_FADE_YELLOW == blinkMode || BLINK_MODE_FADE_RED == blinkMode)
+    if (BLINK_MODE_FADE_YELLOW == blinkMode || BLINK_MODE_FADE_RED == blinkMode || BLINK_MODE_FADE_BLUE == blinkMode || staleCounter >= STALE_MAX_SECONDS)
     {
         unsigned int now = (millis() / 100);// % 10;
         if (blinkModeLastTime == now)
             return 0;
-         if (BLINK_MODE_FADE_YELLOW == blinkMode)
-         {
-             // fade
-             if (blinkDirection == 1 && backlightRed < 255)
-                 backlightRed = backlightRed + 1; //- backlightRed *% 5* + 5;
-             else if (blinkDirection == 0 && backlightRed > 127)
-                 backlightRed = backlightRed - 1; //- backlightRed % 5 - 5;
-             if (blinkDirection == 1 && backlightGreen < 255)
-                 backlightGreen = backlightGreen + 1; //- backlightGreen % 5 + 5;
-             else if (blinkDirection == 0 && backlightGreen > 127)
-                 backlightGreen = backlightGreen - 1; //- backlightGreen % 5 - 5;
-             // switch                 
-             if (blinkDirection == 1 && backlightRed == 255 && backlightGreen == 255)
-                 blinkDirection = 0;
-             else if (blinkDirection == 0 && backlightRed <= 127 && backlightGreen <= 127)
-                 blinkDirection = 1;
-             backlightBlue = 0;
-         } else { // red
-             if (blinkDirection == 1 && backlightRed < 255)
-                 backlightRed = backlightRed + 1; //- backlightRed % 5 + 5;
-             else if (blinkDirection == 1 && backlightRed == 255)
-                 blinkDirection = 0;
-             else if (blinkDirection == 0 && backlightRed > 127)
-                 backlightRed = backlightRed - 1; //- backlightRed % 5 - 5;
-             else if (blinkDirection == 0 && backlightRed <= 127)
-                 blinkDirection = 1;
-             backlightGreen = 0;
-             backlightBlue = 0;
-         }
+        if (BLINK_MODE_FADE_YELLOW == blinkMode)
+        {
+            // fade
+            if (blinkDirection == 1 && backlightRed < 255)
+                backlightRed = backlightRed + 1; //- backlightRed *% 5* + 5;
+            else if (blinkDirection == 0 && backlightRed > 127)
+                backlightRed = backlightRed - 1; //- backlightRed % 5 - 5;
+            if (blinkDirection == 1 && backlightGreen < 255)
+                backlightGreen = backlightGreen + 1; //- backlightGreen % 5 + 5;
+            else if (blinkDirection == 0 && backlightGreen > 127)
+                backlightGreen = backlightGreen - 1; //- backlightGreen % 5 - 5;
+            // switch                 
+            if (blinkDirection == 1 && backlightRed == 255 && backlightGreen == 255)
+                blinkDirection = 0;
+            else if (blinkDirection == 0 && backlightRed <= 127 && backlightGreen <= 127)
+                blinkDirection = 1;
+            backlightBlue = 0;
+        } else if (BLINK_MODE_FADE_RED == blinkMode) {
+            if (blinkDirection == 1 && backlightRed < 255)
+                backlightRed = backlightRed + 1; //- backlightRed % 5 + 5;
+            else if (blinkDirection == 1 && backlightRed == 255)
+                blinkDirection = 0;
+            else if (blinkDirection == 0 && backlightRed > 127)
+                backlightRed = backlightRed - 1; //- backlightRed % 5 - 5;
+            else if (blinkDirection == 0 && backlightRed <= 127)
+                blinkDirection = 1;
+            backlightGreen = 0;
+            backlightBlue = 0;
+        } else { // blue and/or stale
+            if (blinkDirection == 1 && backlightBlue < 255)
+                backlightBlue = backlightBlue + 1; //- backlightBlue % 5 + 5;
+            else if (blinkDirection == 1 && backlightBlue == 255)
+                blinkDirection = 0;
+            else if (blinkDirection == 0 && backlightBlue > 127)
+                backlightBlue = backlightBlue - 1; //- backlightRed % 5 - 5;
+            else if (blinkDirection == 0 && backlightBlue <= 127)
+                blinkDirection = 1;
+            backlightGreen = 64;
+            backlightRed = 64;
+        }
     }
     return 1;
 }
@@ -373,6 +427,7 @@ void doBlink()
     if (blinkModePrevious != blinkMode && BLINK_MODE_NONE == blinkMode)
     {
         rc = 0;
+        blinkModePrevious = blinkMode;
         // Make white
         backlightRed = backlightGreen = backlightBlue = 255;
         // Restore to previous backlight enabled/disabled state
@@ -389,6 +444,40 @@ void doBlink()
     }
 }
 
+unsigned char previousButtonBlinkTime = 0;
+void doButtonBlink()
+{
+    if (0 == buttonLedBlink)
+        return;
+    unsigned int now = (millis() / 1000) % 10;
+    if (previousButtonBlinkTime == now)
+        return; // Operate only every second
+    previousButtonBlinkTime = now;
+    buttonLedBlink = (1 == buttonLedBlink) ? 2 : 1;
+    digitalWrite(BUTTON_RED_GREEN_LED, 1 == buttonLedBlink ? HIGH : LOW);
+}
+
+unsigned char stalePreviousSecond = 0;
+
+void countStale()
+{
+    unsigned int now = (millis() / 1000) % 10;
+    if (staleTriggered && staleCounter < STALE_MAX_SECONDS)
+    {
+        staleTriggered = 0;
+        backlightRed = backlightGreen = backlightBlue = 255;
+        // Restore to previous backlight enabled/disabled state
+        toggleBacklight();
+        toggleBacklight();
+    }
+    if (now == stalePreviousSecond)
+        return;
+    stalePreviousSecond = now;
+    if (staleCounter < STALE_MAX_SECONDS)
+        staleCounter += 1;
+    else
+        staleTriggered = 1;
+}
 
 void loop()
 {
@@ -444,7 +533,9 @@ void loop()
             lcd.setCursor(0, 3);
             lcd.print(Ethernet.localIP());
         }
+        countStale();
         doBlink();
+        doButtonBlink();
         
         // Print buttons
 #if 0
