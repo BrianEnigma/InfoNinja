@@ -1,31 +1,57 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <title>InfoNinja Test</title>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        function updateIpAddr()
+        {
+            ipMatch = /^http:\/\/[^\/]+\//;
+            newIp = $('#ipaddr').val();
+            $("a").each(function(index, element) {
+                uri = $(this).attr("href");
+                uri = uri.replace(ipMatch, "http://" + newIp + "/");
+                $(this).attr("href", uri);
+            });
+        }
+        $(document).ready(function() {
+            updateIpAddr();
+        });        
+    </script>
 </head>
 <body>
+    <form method="post" onsubmit="updateIpAddr(); return false;"><label>InfoNinja's IP Address: <input type="text" name="ipaddr" value="10.0.1.15" id="ipaddr" onChange="updateIpAddr();" /></label></form>
     <ul>
-        <li><a target="_blank" href="http://10.0.1.15/print?0:HELLO">Print Hello</a></li>
-        <li><a target="_blank" href="http://10.0.1.15/print?0:Ninja">Print Ninja</a></li>
-        <li><a target="_blank" href="http://10.0.1.15/buttonled?1">Button Lights On</a></li>
-        <li><a target="_blank" href="http://10.0.1.15/buttonled?0">Button Lights Off</a></li>
-        <li><a target="_blank" href="http://10.0.1.15/buttonled?2">Button Lights Blink</a></li>
-        <li><a target="_blank" href="http://10.0.1.15/lcdcolor?000000000">Backlight Off</a></li>
-        <li><a target="_blank" href="http://10.0.1.15/lcdcolor?255255255">Backlight White</a></li>
-        <li><a target="_blank" href="http://10.0.1.15/lcdcolor?255000000">Backlight Red</a></li>
-        <li><a target="_blank" href="http://10.0.1.15/lcdcolor?000255000">Backlight Green</a></li>
-        <li><a target="_blank" href="http://10.0.1.15/lcdcolor?000000255">Backlight Blue</a></li>
-        <li><a target="_blank" href="http://10.0.1.15/lcdcolor?255255000">Backlight Yellow</a></li>
-        <li><a target="_blank" href="http://10.0.1.15/lcdcolor?255000255">Backlight Purple</a></li>
-        <li><a target="_blank" href="http://10.0.1.15/lcdcolor?000255255">Backlight Cyan</a></li>
-        <li><a target="_blank" href="http://10.0.1.15/blinkmode?0">No Blink</a></li>
-        <li><a target="_blank" href="http://10.0.1.15/blinkmode?1">Flash Yellow</a></li>
-        <li><a target="_blank" href="http://10.0.1.15/blinkmode?2">Flash Red</a></li>
-        <li><a target="_blank" href="http://10.0.1.15/blinkmode?3">Flash Blue</a></li>
-        <li><a target="_blank" href="http://10.0.1.15/blinkmode?4">Fade Yellow</a></li>
-        <li><a target="_blank" href="http://10.0.1.15/blinkmode?5">Fade Red</a></li>
-        <li><a target="_blank" href="http://10.0.1.15/blinkmode?6">Fade Blue</a></li>
-        
+        <li>LCD Text
+        <ul>
+            <li><a target="_blank" href="http://10.0.1.15/print?0:HELLO">Print Hello</a></li>
+            <li><a target="_blank" href="http://10.0.1.15/print?0:Ninja">Print Ninja</a></li>
+        </ul></li>
+        <li>Button LEDs
+        <ul>
+            <li><a target="_blank" href="http://10.0.1.15/buttonled?1">Button Lights On</a></li>
+            <li><a target="_blank" href="http://10.0.1.15/buttonled?0">Button Lights Off</a></li>
+            <li><a target="_blank" href="http://10.0.1.15/buttonled?2">Button Lights Blink</a></li>
+        </ul></li>
+        <li>LCD Backlight Colors
+        <ul>
+            <li><a target="_blank" href="http://10.0.1.15/lcdcolor?000000000">Backlight Off</a></li>
+            <li><a target="_blank" href="http://10.0.1.15/lcdcolor?255255255">Backlight White</a></li>
+            <li><a target="_blank" href="http://10.0.1.15/lcdcolor?255000000">Backlight Red</a></li>
+            <li><a target="_blank" href="http://10.0.1.15/lcdcolor?000255000">Backlight Green</a></li>
+            <li><a target="_blank" href="http://10.0.1.15/lcdcolor?000000255">Backlight Blue</a></li>
+            <li><a target="_blank" href="http://10.0.1.15/lcdcolor?255255000">Backlight Yellow</a></li>
+            <li><a target="_blank" href="http://10.0.1.15/lcdcolor?255000255">Backlight Purple</a></li>
+            <li><a target="_blank" href="http://10.0.1.15/lcdcolor?000255255">Backlight Cyan</a></li>
+            <li><a target="_blank" href="http://10.0.1.15/blinkmode?0">No Blink</a></li>
+            <li><a target="_blank" href="http://10.0.1.15/blinkmode?1">Flash Yellow</a></li>
+            <li><a target="_blank" href="http://10.0.1.15/blinkmode?2">Flash Red</a></li>
+            <li><a target="_blank" href="http://10.0.1.15/blinkmode?3">Flash Blue</a></li>
+            <li><a target="_blank" href="http://10.0.1.15/blinkmode?4">Fade Yellow</a></li>
+            <li><a target="_blank" href="http://10.0.1.15/blinkmode?5">Fade Red</a></li>
+            <li><a target="_blank" href="http://10.0.1.15/blinkmode?6">Fade Blue</a></li>
+        </ul></li>
     </ul>
 </body>
 </html>
