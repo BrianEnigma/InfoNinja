@@ -22,6 +22,7 @@
     - [10M2 screws](http://www.mcmaster.com/#91290A017), #91290A017
     - [M2 nuts](http://www.mcmaster.com/#90591A111), #90591A111
     - [8M3 Spacers](http://www.mcmaster.com/#93657A143), #93657A143
+	- [M3 Nylon Washers](http://www.mcmaster.com/#95610A130), #95610A130
     - [Rubber feet](http://www.mcmaster.com/#9540K51), #9540K51
 4. Obtain laser-cut parts
     - Laser-cut the case
