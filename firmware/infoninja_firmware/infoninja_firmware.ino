@@ -158,6 +158,10 @@ void printCmd(WebServer &server, WebServer::ConnectionType type, char *url_tail,
                     *pos2 = unescape(pos + 1);
                     pos += 3;
                     pos2 += 1;
+                } else if (*pos == '+') {
+                    *pos2 = ' ';
+                    pos += 1;
+                    pos2 += 1;
                 } else {
                     *pos2 = *pos;
                     pos += 1;
