@@ -148,12 +148,13 @@ class ServiceThreadTime < ServiceThread
             now = Time.new
             # Get the time and force a lowercase AM/PM
             time_string = now.strftime("%I:%M%p").downcase
+            date_string = now.strftime("%m/%d")
             # Remove the leading zero.  I hate that thing.
             if time_string[0] == '0'[0]
                 time_string = time_string[1..time_string.length()]
             end
-            print "Time is now #{time_string}\n" if TIME_SERVICE_DEBUG
-            text_buffer.set_line(0, time_string)
+            print "Time is now #{time_string} #{date_string}\n" if TIME_SERVICE_DEBUG
+            text_buffer.set_line(0, "#{time_string} #{date_string}")
             print "Sleeping\n" if TIME_SERVICE_DEBUG
             sleep(10)
         end
