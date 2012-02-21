@@ -55,9 +55,17 @@ class ServiceThreadTrimet < ServiceThread
                     elsif :invalid == arrival.status
                         entry << "[inv]"
                     elsif :estimated == arrival.status
-                        entry << "#{arrival.arriving_in_minutes}min"
+                        if 0 == arrival.arriving_in_minutes
+                            entry << "now"
+                        else
+                            entry << "#{arrival.arriving_in_minutes}min"
+                        end
                     elsif :scheduled == arrival.status
-                        entry << "#{arrival.arriving_in_minutes}min?"
+                        if 0 == arrival.arriving_in_minutes
+                            entry << "now?"
+                        else
+                            entry << "#{arrival.arriving_in_minutes}min?"
+                        end
                     elsif :delayed == arrival.status
                         entry << "@#{arrival.arrival_time.strftime('%I:%M')}"
                     else
