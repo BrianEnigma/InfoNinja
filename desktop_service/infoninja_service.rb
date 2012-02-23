@@ -24,6 +24,7 @@ require "uri"
 require "infoninja_service_lib"
 # Include any other libs derived from ServiceThread here...
 require "infoninja_service_trimet"
+require "infoninja_service_trac_counts"
 # End includes
 
 print "InfoNinja Service v1.0\n"
@@ -75,13 +76,14 @@ threads << time_service
 trimet_service = ServiceThreadTrimet.new
 trimet_service.start(text_buffer)
 threads << trimet_service
+trac_count_service = ServiceThreadTracCounts.new
+trac_count_service.start(text_buffer)
+threads << trac_count_service
 # ------------------------------------------
-
-# Give the threads a sec to stabalize
-sleep(1)
 
 # Infinite program loop
 print "Staring update thread\n"
+refresh_counter = 0
 while (true)
     # Print the four lines
     (0..3).each { |i|
@@ -94,7 +96,14 @@ while (true)
     # TODO: update backlight
     # TODO: resolve button LED conflict
     # TODO: resolve backlight blink conflict
-    # Wait for the next cycle
-    sleep(20)
+
+    # Wait for the next cycle.  Update more frequently at first to better
+    # show threads that take a bit longer to stabilize.
+    if refresh_counter < 5
+        sleep(2)
+        refresh_counter += 1
+    else
+        sleep(20)
+    end
 end
 
