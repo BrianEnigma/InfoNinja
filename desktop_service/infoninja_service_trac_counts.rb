@@ -91,4 +91,8 @@ class ServiceThreadTracCounts < ServiceThread
         print "#{count}\n" if TRAC_COUNT_SERVICE_DEBUG
         return count
     end
+
+    def errored(text_buffer, exception_object)
+        text_buffer.set_line(1, "trac fetch error");
+    end
 end

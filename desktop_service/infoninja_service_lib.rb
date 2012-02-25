@@ -91,7 +91,12 @@ BASE_SERVICE_DEBUG = true
 
 # A base class for defining the interface between a worker thread (one that
 # monitors some environmental condition) and the main thread (the thread that
-# sends updates to your InfoNinja)
+# sends updates to your InfoNinja).
+#
+# You must implement:
+# - start_internal(text_buffer)
+# - errored(text_buffer, exception_object)
+#
 class ServiceThread
     def initialize()
         @name = "unnamed"
@@ -107,6 +112,7 @@ class ServiceThread
                 print "Service thread \"#{@name} has died!\n"
                 print "#{e.to_s}\n"
                 print "#{e.backtrace}\n"
+                errored(text_buffer, e)
             end
         }
     end
@@ -158,5 +164,9 @@ class ServiceThreadTime < ServiceThread
             print "Sleeping\n" if TIME_SERVICE_DEBUG
             sleep(10)
         end
+    end
+
+    def errored(text_buffer, exception_object)
+        text_buffer.set_line(0, "time error");
     end
 end

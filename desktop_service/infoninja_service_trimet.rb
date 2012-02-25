@@ -92,4 +92,9 @@ class ServiceThreadTrimet < ServiceThread
             sleep(60)
         end
     end
+    
+    def errored(text_buffer, exception_object)
+        text_buffer.set_line(2, "trimet data error");
+        text_buffer.set_line(3, "#{exception_object.to_s}");
+    end
 end
