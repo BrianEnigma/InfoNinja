@@ -68,18 +68,12 @@ text_buffer = TextBuffer.new
 
 # Set up service threads
 threads = Array.new
-time_service = ServiceThreadTime.new
-print "Starting time thread\n"
-time_service.start(text_buffer)
-threads << time_service
-# Add any additional threads & services here
-trimet_service = ServiceThreadTrimet.new
-trimet_service.start(text_buffer)
-threads << trimet_service
-trac_count_service = ServiceThreadTracCounts.new
-trac_count_service.start(text_buffer)
-threads << trac_count_service
-# ------------------------------------------
+$InfoNinja_Service_List.each { |thread_class|
+      this_thread = thread_class.new
+      print "Starting thread #{this_thread.name}\n"
+      this_thread.start(text_buffer)
+      threads << this_thread
+}
 
 # Infinite program loop
 print "Staring update thread\n"

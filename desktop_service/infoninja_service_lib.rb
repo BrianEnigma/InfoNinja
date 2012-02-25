@@ -21,6 +21,11 @@
 
 require 'cgi'
 require 'thread'
+
+# Global array for all known InfoNinja service classes.  Add to this list if
+# you subclass ServiceThread.
+$InfoNinja_Service_List = Array.new
+
 TEXT_BUFFER_DEBUG = true
 
 # TextBuffer is a class that represents the text on an InfoNinja
@@ -98,6 +103,7 @@ BASE_SERVICE_DEBUG = true
 # - errored(text_buffer, exception_object)
 #
 class ServiceThread
+    attr_reader :name
     def initialize()
         @name = "unnamed"
     end
@@ -170,3 +176,7 @@ class ServiceThreadTime < ServiceThread
         text_buffer.set_line(0, "time error");
     end
 end
+
+
+$InfoNinja_Service_List << ServiceThreadTime
+

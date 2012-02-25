@@ -98,3 +98,7 @@ class ServiceThreadTrimet < ServiceThread
         text_buffer.set_line(3, "#{exception_object.to_s}");
     end
 end
+
+
+$InfoNinja_Service_List << ServiceThreadTrimet
+

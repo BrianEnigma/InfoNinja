@@ -96,3 +96,6 @@ class ServiceThreadTracCounts < ServiceThread
         text_buffer.set_line(1, "trac fetch error");
     end
 end
+
+$InfoNinja_Service_List << ServiceThreadTracCounts
+
