@@ -75,7 +75,7 @@ end
 class TrimetterArrivalQuery
     attr_accessor :developer_id, :debug
     def initialize()
-        @devloper_id = ''
+        @developer_id = ''
         @stop_list = Array.new
         @route_list = Array.new
         @debug = false;
@@ -107,10 +107,10 @@ class TrimetterArrivalQuery
     # block your ID.
     def fetch_update(result_array, error_string)
         result_array.clear()
-        error_string = ''
-        error_string = 'No developer ID given' if @developer_id.empty?
-        error_string = 'No stop list given' if @stop_list.empty?
-        error_string = 'No route list given' if @route_list.empty?
+        error_string.gsub!(/.*/, '')
+        error_string << 'No developer ID given' if @developer_id.empty?
+        error_string << 'No stop list given' if @stop_list.empty?
+        error_string << 'No route list given' if @route_list.empty?
         return false unless error_string.empty?
         
         # Build request
@@ -122,7 +122,7 @@ class TrimetterArrivalQuery
         response = Net::HTTP.get(URI(url))
         print "Received #{response.length()} bytes\n" if @debug
         if response.empty?
-            error_string = "Empty document returned"
+            error_string << "Empty document returned"
             return false
         end
         print "\n\n#{response}\n\n\n" if @debug
@@ -131,13 +131,13 @@ class TrimetterArrivalQuery
         begin
             document = REXML::Document.new(response)
         rescue
-            error_string = "Error parsing XML"
+            error_string << "Error parsing XML"
             return false
         end
         
         # Server returned valid XML, but it contained an error node
         document.each_element("//errorMessage") { |el|
-            error_string = el.get_text() if !el.get_text().empty?
+            error_string << el.get_text() if !el.get_text().empty?
         }
         return false unless error_string.empty?
         
@@ -168,7 +168,7 @@ class TrimetterArrivalQuery
             print "#{arrival.inspect}\n" if @debug
             result_array << arrival
         }
-        error_string = 'No records found' if result_array.empty?
+        error_string << 'No records found' if result_array.empty?
         return error_string.empty?
     end
 end
