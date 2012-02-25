@@ -2,6 +2,8 @@
 
 InfoNinja is an Open Source Ethernet-connected desktop heads-up display. It works in tandem with a desktop computer to give you an at-a-glance secondary display of both text and ambient (color/blink/fade) information.
 
+It is also a tea timer.
+
 More detailed information and instructions about InfoNinja can be found at <http://netninja.com/projects/infoninja/>.
 
 #Overview
