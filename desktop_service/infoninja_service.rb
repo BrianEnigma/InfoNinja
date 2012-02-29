@@ -25,6 +25,8 @@ require "infoninja_service_lib"
 # Include any other libs derived from ServiceThread here...
 require "infoninja_service_trimet"
 require "infoninja_service_trac_counts"
+#require "infoninja_service_fortune"
+require "infoninja_service_latest_tweet"
 # End includes
 
 print "InfoNinja Service v1.0\n"

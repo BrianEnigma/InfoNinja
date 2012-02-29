@@ -79,13 +79,13 @@ class ServiceThreadTrimet < ServiceThread
                     end
                 }
                 if (arrivals.length > 0)
-                    text_buffer.set_line(2, line_14)
+                    #text_buffer.set_line(2, line_14)
                     text_buffer.set_line(3, line_9)
                 else
                     text_buffer.set_line(3, "No Trimet Data")
                 end
             else
-                text_buffer.set_line(2, "Trimet Fetch Error")
+                #text_buffer.set_line(2, "Trimet Fetch Error")
                 text_buffer.set_line(3, error_string)
             end
             print "Sleeping\n" if TRIMET_SERVICE_DEBUG
@@ -94,7 +94,7 @@ class ServiceThreadTrimet < ServiceThread
     end
     
     def errored(text_buffer, exception_object)
-        text_buffer.set_line(2, "trimet data error");
+        #text_buffer.set_line(2, "trimet data error");
         text_buffer.set_line(3, "#{exception_object.to_s}");
     end
 end
