@@ -23,7 +23,7 @@ $LOAD_PATH << File.expand_path("../")
 require "infoninja_service_lib"
 require "trimetter"
 
-TRIMET_SERVICE_DEBUG = true
+TRIMET_SERVICE_DEBUG = false
 
 class ServiceThreadTrimet < ServiceThread
     def initialize()

@@ -26,7 +26,7 @@ require 'thread'
 # you subclass ServiceThread.
 $InfoNinja_Service_List = Array.new
 
-TEXT_BUFFER_DEBUG = true
+TEXT_BUFFER_DEBUG = false
 
 # TextBuffer is a class that represents the text on an InfoNinja
 # screen.  All threads share a common TextBuffer and can write into
