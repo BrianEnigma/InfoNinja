@@ -19,46 +19,37 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+$LOAD_PATH << File.expand_path("../")
 require "infoninja_service_lib"
-require "trimetter"
+require "net/http"
+require "uri"
+require "cgi"
 
-TWITTER_USERNAME = 'elementaltech'
-TWITTER_URL = "http://api.twitter.com/1/statuses/user_timeline.rss?screen_name=#{TWITTER_USERNAME}"
-DISPLAY_LINE = 2
+FORTUNE = "/usr/bin/fortune"
+FORTUNE_COMMAND = "#{FORTUNE} -n20 -s"
 
-class ServiceThreadLatestTweet < ServiceThread
+class ServiceThreadFortune < ServiceThread
     def initialize()
-        @name = "latest tweet service"
+        @available = File.exists?(FORTUNE)
     end
     
     def start_internal(text_buffer)
+        if @available == false
+            text_buffer.set_line(2, "fortune cmd unavailable")
+            return
+        end
         while (true)
-            tweet = ''
-
-            # Get RSS document
-            response = Net::HTTP.get(URI(TWITTER_URL))
-            
-            # Parse resulting XML
-            document = REXML::Document.new(response)
-
-            document.each_element("//item[1]/description") { |el|
-                tweet = el.text
-                tweet.gsub!(/^[^:]+:/, "")
-                tweet.strip!
-            }
-            if tweet.empty?
-                tweet = 'No tweet data'
-            end
-            text_buffer.set_line(DISPLAY_LINE, tweet)
+            fortune = `#{FORTUNE_COMMAND}`
+            fortune.strip!
+            text_buffer.set_line(2, fortune)
             sleep(5 * 60)
         end
     end
-    
+
     def errored(text_buffer, exception_object)
-        text_buffer.set_line(DISPLAY_LINE, "#{exception_object.to_s}");
+        text_buffer.set_line(2, "fortune error");
     end
 end
 
-
-$InfoNinja_Service_List << ServiceThreadLatestTweet
+$InfoNinja_Service_List << ServiceThreadFortune
 

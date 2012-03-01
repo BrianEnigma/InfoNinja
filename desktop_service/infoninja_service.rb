@@ -22,12 +22,13 @@
 require "net/http"
 require "uri"
 require "infoninja_service_lib"
-# Include any other libs derived from ServiceThread here...
-require "infoninja_service_trimet"
-require "infoninja_service_trac_counts"
-#require "infoninja_service_fortune"
-require "infoninja_service_latest_tweet"
-# End includes
+
+# Load services from active_services folder, sorted by name
+$LOAD_PATH << File.expand_path("./active_services/")
+Dir.glob("./active_services/*.rb").sort.each { |service|
+    require "#{service}"
+}
+
 
 print "InfoNinja Service v1.0\n"
 
