@@ -106,19 +106,37 @@ class ServiceThread
     attr_reader :name
     def initialize()
         @name = "unnamed"
+        @launc_time = 0
+        @error_count = 0
     end
     
     # Start the service thread with the given text buffer.
     def start(text_buffer)
         print "Starting service \"#{@name}\"\n" if BASE_SERVICE_DEBUG
-        @my_thread = Thread.new { 
-            begin
-                start_internal(text_buffer) 
-            rescue => e
-                print "Service thread \"#{@name} has died!\n"
-                print "#{e.to_s}\n"
-                print "#{e.backtrace}\n"
-                errored(text_buffer, e)
+        @my_thread = Thread.new {
+            do_abort = false
+            while (!do_abort)
+                @launch_time = Time.new.to_i
+                begin
+                    start_internal(text_buffer) 
+                rescue => e
+                    print "Service thread \"#{@name} has died!\n"
+                    print "#{e.to_s}\n"
+                    print "#{e.backtrace}\n"
+                    now = Time.new.to_i
+                    # If it's been running for a while (5+ minutes), give it some
+                    # retries.  If it's been less than that, increment the retry count
+                    if now - @launch_time > 5 * 50
+                        @error_count = 0
+                    else
+                        @error_count += 1
+                    end
+                    # Too many retries leads to error
+                    if @error_count > 3
+                        errored(text_buffer, e)
+                        do_abort = true
+                    end
+                end
             end
         }
     end
