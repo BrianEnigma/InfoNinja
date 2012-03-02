@@ -51,8 +51,16 @@ class ServiceThreadTracCounts < ServiceThread
                 labels = @fnv_statuses if 1 == i
                 labels = @closed_statuses if 2 == i
                 labels.each { |label|
-                    counts[i] += fetch_count(label)
+                    this_count = fetch_count(label)
+                    if -1 != this_count && -1 != counts[i]
+                        counts[i] += this_count
+                    else
+                        counts[i] = -1
+                    end
                 }
+            }
+            (0...3).each { |i|
+                counts[i] = 'ERR' if counts[i] == -1
             }
             line = "#{TRAC_COUNT_LABEL}: #{counts[0]}o #{counts[1]}fnv #{counts[2]}c"
             text_buffer.set_line(1, line)
@@ -86,6 +94,10 @@ class ServiceThreadTracCounts < ServiceThread
         if nil != matches && matches.length != 2
             print "Trac Count regexp unexpectedly matched #{matches.length} item(s)\n"
             count = 0
+        elsif nil == matches[1]
+            print "Trac Count matched nil on \"#{response_string}\n"
+            p matches
+            count = -1
         else
             count = matches[1].to_i
         end
