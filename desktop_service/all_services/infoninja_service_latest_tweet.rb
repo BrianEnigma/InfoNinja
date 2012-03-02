@@ -21,7 +21,6 @@
 
 $LOAD_PATH << File.expand_path("../")
 require "infoninja_service_lib"
-require "trimetter"
 
 TWITTER_USERNAME = 'elementaltech'
 TWITTER_URL = "http://api.twitter.com/1/statuses/user_timeline.rss?screen_name=#{TWITTER_USERNAME}"

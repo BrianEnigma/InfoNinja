@@ -21,6 +21,7 @@
 
 $LOAD_PATH << File.expand_path("../")
 require "infoninja_service_lib"
+require "rubygems"
 require "trimetter"
 
 TRIMET_SERVICE_DEBUG = false
