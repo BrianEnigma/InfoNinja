@@ -29,8 +29,7 @@ Dir.glob("./active_services/*.rb").sort.each { |service|
     require "#{service}"
 }
 
-
-print "InfoNinja Service v1.0\n"
+print "InfoNinja Service v1.1\n"
 
 #Get IP address
 if ARGV.length < 1

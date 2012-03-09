@@ -91,7 +91,7 @@ class ServiceThreadTracCounts < ServiceThread
             return 0
         end
         matches = response_string.match(/\(([0-9]+) matche?s?\)/)
-        if nil != matches && matches.length != 2
+        if nil == matches || matches.length != 2
             print "Trac Count regexp unexpectedly matched #{matches.length} item(s)\n"
             count = 0
         elsif nil == matches[1]

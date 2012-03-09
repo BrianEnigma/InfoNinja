@@ -120,7 +120,8 @@ class ServiceThread
                 begin
                     start_internal(text_buffer) 
                 rescue => e
-                    print "Service thread \"#{@name} has died!\n"
+                    timestamp = Time.new.strftime("%Y-%m-%d %H:%M:%S")
+                    print "#{timestamp}: Service thread \"#{@name} has died!\n"
                     print "#{e.to_s}\n"
                     print "#{e.backtrace}\n"
                     now = Time.new.to_i
