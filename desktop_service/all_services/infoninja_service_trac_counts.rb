@@ -28,8 +28,10 @@ require "cgi"
 TRAC_COUNT_SERVICE_DEBUG = false
 
 TRAC_COUNT_URL = "http://hood/sockeye/query?"
-TRAC_COUNT_PROJECT = "Sockeye 1.8"
-TRAC_COUNT_LABEL = "v1.8"
+#TRAC_COUNT_PROJECT = "Sockeye 1.8"
+#TRAC_COUNT_LABEL = "v1.8"
+TRAC_COUNT_PROJECT = "Kokanee 1.5 - RTT1"
+TRAC_COUNT_LABEL = "RTT1"
 
 class ServiceThreadTracCounts < ServiceThread
     def initialize()
@@ -58,6 +60,7 @@ class ServiceThreadTracCounts < ServiceThread
                         counts[i] = -1
                     end
                 }
+                sleep(5)
             }
             (0...3).each { |i|
                 counts[i] = 'ERR' if counts[i] == -1
@@ -92,7 +95,9 @@ class ServiceThreadTracCounts < ServiceThread
         end
         matches = response_string.match(/\(([0-9]+) matche?s?\)/)
         if nil == matches || matches.length != 2
-            print "Trac Count regexp unexpectedly matched #{matches.length} item(s)\n"
+            length = 0
+            length = matches.length if nil != matches
+            print "Trac Count regexp unexpectedly matched #{length} item(s)\n"
             count = 0
         elsif nil == matches[1]
             print "Trac Count matched nil on \"#{response_string}\n"
