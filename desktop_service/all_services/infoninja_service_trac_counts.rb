@@ -39,10 +39,23 @@ class ServiceThreadTracCounts < ServiceThread
         @open_statuses = ['accepted', 'assigned', 'new', 'reopened']
         @fnv_statuses = ['fixed_not_verified']
         @closed_statuses = ['closed']
+        @http_username = nil
+        @http_password = nil
     end
+
+    def load_username_password
+        if File.exists?(File.expand_path("~/.tracid"))
+            f = File.new(File.expand_path("~/.tracid"), "r")
+            @http_username = f.readline().strip()
+            @http_password = f.readline().strip()
+            f.close()
+        end
+    end
+    private :load_username_password
     
     def start_internal(text_buffer)
         print "Trac Count service started\n" if TRAC_COUNT_SERVICE_DEBUG
+        load_username_password()
         while (true)
             arrivals = Array.new
             error_string = ''
@@ -76,10 +89,15 @@ class ServiceThreadTracCounts < ServiceThread
         response_string = ''
         count = 0
         url = URI("#{TRAC_COUNT_URL}status=#{label}&max=1000&group=status&milestone=#{CGI::escape(TRAC_COUNT_PROJECT)}")
+        req = Net::HTTP::Get.new(url.request_uri)
         print "#{url}\n" if TRAC_COUNT_SERVICE_DEBUG
+        if (nil != @http_username && nil != @http_password)
+          req.basic_auth(@http_username, @http_password)
+        end
         begin
             response = Net::HTTP.start(url.host, url.port) { |http|
-                http.get(url.request_uri)
+                #http.get(url.request_uri)
+                http.request(req)
             }
             response_string = response.body
         rescue => e
