@@ -28,10 +28,10 @@ require "cgi"
 TRAC_COUNT_SERVICE_DEBUG = false
 
 TRAC_COUNT_URL = "http://hood/sockeye/query?"
-#TRAC_COUNT_PROJECT = "Sockeye 1.8"
-#TRAC_COUNT_LABEL = "v1.8"
-TRAC_COUNT_PROJECT = "Kokanee 1.5 - RTT1"
-TRAC_COUNT_LABEL = "RTT1"
+TRAC_COUNT_PROJECT = "Sockeye 1.9"
+TRAC_COUNT_LABEL = "v1.9"
+#TRAC_COUNT_PROJECT = "Kokanee 1.5"
+#TRAC_COUNT_LABEL = "v1.5"
 
 class ServiceThreadTracCounts < ServiceThread
     def initialize()
@@ -81,7 +81,7 @@ class ServiceThreadTracCounts < ServiceThread
             line = "#{TRAC_COUNT_LABEL}: #{counts[0]}o #{counts[1]}fnv #{counts[2]}c"
             text_buffer.set_line(1, line)
             print "Sleeping\n" if TRAC_COUNT_SERVICE_DEBUG
-            sleep(60)
+            sleep(5 * 60)
         end
     end
 

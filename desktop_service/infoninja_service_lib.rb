@@ -137,6 +137,11 @@ class ServiceThread
                         errored(text_buffer, e)
                         do_abort = true
                     end
+                rescue
+                    print "#{timestamp}: Service thread \"#{@name} has died!\n"
+                    print "Unknown exception occurred\n"
+                ensure
+                    print "#{timestamp}: Service thread \"#{@name} has exited.\n"
                 end
             end
         }
