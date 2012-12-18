@@ -28,8 +28,8 @@ require "cgi"
 TRAC_COUNT_SERVICE_DEBUG = false
 
 TRAC_COUNT_URL = "http://hood/sockeye/query?"
-TRAC_COUNT_PROJECT = "Sockeye 1.9"
-TRAC_COUNT_LABEL = "v1.9"
+TRAC_COUNT_PROJECT = "2.0"
+TRAC_COUNT_LABEL = "2.0"
 #TRAC_COUNT_PROJECT = "Kokanee 1.5"
 #TRAC_COUNT_LABEL = "v1.5"
 
