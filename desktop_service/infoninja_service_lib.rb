@@ -118,8 +118,11 @@ class ServiceThread
             while (!do_abort)
                 @launch_time = Time.new.to_i
                 begin
+                    print "Starting internal \"#{name}\" thread\n" if BASE_SERVICE_DEBUG
                     start_internal(text_buffer) 
+                    print "Finished internal \"#{name}\" thread\n" if BASE_SERVICE_DEBUG
                 rescue => e
+                    print "Thread \"#{name}\" got exception\n"
                     timestamp = Time.new.strftime("%Y-%m-%d %H:%M:%S")
                     print "#{timestamp}: Service thread \"#{@name} has died!\n"
                     print "#{e.to_s}\n"
