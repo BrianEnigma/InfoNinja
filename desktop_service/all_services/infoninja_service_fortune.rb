@@ -25,11 +25,12 @@ require "net/http"
 require "uri"
 require "cgi"
 
-FORTUNE = "/usr/bin/fortune"
-FORTUNE_COMMAND = "#{FORTUNE} -n20 -s"
+FORTUNE = "/usr/games/fortune"
+FORTUNE_COMMAND = "#{FORTUNE} -n20 -s -a"
 
 class ServiceThreadFortune < ServiceThread
     def initialize()
+        @name = "fortune service"
         @available = File.exists?(FORTUNE)
     end
     
