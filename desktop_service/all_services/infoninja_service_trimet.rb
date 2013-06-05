@@ -24,7 +24,7 @@ require "infoninja_service_lib"
 require "rubygems"
 require "trimetter"
 
-TRIMET_SERVICE_DEBUG = false
+TRIMET_SERVICE_DEBUG = true
 
 class ServiceThreadTrimet < ServiceThread
     def initialize()

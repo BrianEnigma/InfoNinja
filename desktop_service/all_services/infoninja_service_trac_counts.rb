@@ -25,11 +25,11 @@ require "net/http"
 require "uri"
 require "cgi"
 
-TRAC_COUNT_SERVICE_DEBUG = false
+TRAC_COUNT_SERVICE_DEBUG = true
 
 TRAC_COUNT_URL = "http://hood/sockeye/query?"
-TRAC_COUNT_PROJECT = "2.0"
-TRAC_COUNT_LABEL = "2.0"
+TRAC_COUNT_PROJECT = "2.1.1"
+TRAC_COUNT_LABEL = "211"
 #TRAC_COUNT_PROJECT = "Kokanee 1.5"
 #TRAC_COUNT_LABEL = "v1.5"
 

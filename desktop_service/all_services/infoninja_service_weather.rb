@@ -31,6 +31,7 @@ class ServiceThreadWeather < ServiceThread
         @lat = 45.52050
         @long = -122.70734900000002
         @url = "http://forecast.weather.gov/MapClick.php?lat=#{@lat}&lon=#{@long}&unit=0&lg=english&FcstType=dwml"
+        # Example: http://forecast.weather.gov/MapClick.php?lat=45.52050&lon=-122.70734900000002&unit=0&lg=english&FcstType=dwml
     end
     
     def start_internal(text_buffer)
@@ -51,12 +52,11 @@ class ServiceThreadWeather < ServiceThread
               end
             end
             if nil != document
-              document.each_element('//dwml/data[@type="current observations"]/parameters/temperature') { |temp_element|
-                if temp_element.attributes['type'] == 'apparent'
-                  temp_element.each_element("value") { |v|
-                    entry << v.text
-                  }
-                end
+              f = File.new("/tmp/weather.xml", "w")
+              document.write(f)
+              f.close()
+              document.each_element('//dwml/data[@type="current observations"]/parameters/temperature[@type="apparent"]/value') { |temp_element|
+                entry << temp_element.text
               }
               temp_min = ''
               temp_max = ''
@@ -87,7 +87,6 @@ class ServiceThreadWeather < ServiceThread
     end
     
     def errored(text_buffer, exception_object)
-        #text_buffer.set_line(2, "trimet data error");
         text_buffer.set_line(3, "#{exception_object.to_s}");
     end
 end
