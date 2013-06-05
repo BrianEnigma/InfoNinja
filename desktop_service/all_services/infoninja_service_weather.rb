@@ -28,8 +28,8 @@ class ServiceThreadWeather < ServiceThread
     def initialize()
         @name = "weather service"
         # Set these to your own stations and lines
-        @lat = 45.52050
-        @long = -122.70734900000002
+        @lat = 45.59578
+        @long = -122.60917
         @url = "http://forecast.weather.gov/MapClick.php?lat=#{@lat}&lon=#{@long}&unit=0&lg=english&FcstType=dwml"
         # Example: http://forecast.weather.gov/MapClick.php?lat=45.52050&lon=-122.70734900000002&unit=0&lg=english&FcstType=dwml
     end
