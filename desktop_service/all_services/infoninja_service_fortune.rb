@@ -20,7 +20,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 $LOAD_PATH << File.expand_path("../")
-require "infoninja_service_lib"
+require "./infoninja_service_lib"
 require "net/http"
 require "uri"
 require "cgi"
@@ -36,19 +36,19 @@ class ServiceThreadFortune < ServiceThread
     
     def start_internal(text_buffer)
         if @available == false
-            text_buffer.set_line(2, "fortune cmd unavailable")
+            text_buffer.set_line(1, "fortune cmd unavailable")
             return
         end
         while (true)
             fortune = `#{FORTUNE_COMMAND}`
             fortune.strip!
-            text_buffer.set_line(2, fortune)
+            text_buffer.set_line(1, fortune)
             sleep(5 * 60)
         end
     end
 
     def errored(text_buffer, exception_object)
-        text_buffer.set_line(2, "fortune error");
+        text_buffer.set_line(1, "fortune error");
     end
 end
 

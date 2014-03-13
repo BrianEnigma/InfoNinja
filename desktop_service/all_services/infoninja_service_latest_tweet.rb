@@ -20,7 +20,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 $LOAD_PATH << File.expand_path("../")
-require "infoninja_service_lib"
+require "./infoninja_service_lib"
 
 TWITTER_USERNAME = 'elementaltech'
 TWITTER_URL = "http://api.twitter.com/1/statuses/user_timeline.rss?screen_name=#{TWITTER_USERNAME}"

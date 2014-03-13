@@ -20,7 +20,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 $LOAD_PATH << File.expand_path("../")
-require "infoninja_service_lib"
+require "./infoninja_service_lib"
 require "net/http"
 require "uri"
 require "cgi"
@@ -28,8 +28,8 @@ require "cgi"
 TRAC_COUNT_SERVICE_DEBUG = true
 
 TRAC_COUNT_URL = "http://hood/sockeye/query?"
-TRAC_COUNT_PROJECT = "2.1.1"
-TRAC_COUNT_LABEL = "211"
+TRAC_COUNT_PROJECT = "2.2"
+TRAC_COUNT_LABEL = "2.2"
 #TRAC_COUNT_PROJECT = "Kokanee 1.5"
 #TRAC_COUNT_LABEL = "v1.5"
 

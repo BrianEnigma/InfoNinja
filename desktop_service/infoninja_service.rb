@@ -21,12 +21,12 @@
 
 require "net/http"
 require "uri"
-require "infoninja_service_lib"
+require "./infoninja_service_lib"
 
 # Load services from active_services folder, sorted by name
 $LOAD_PATH << File.expand_path("./active_services/")
 Dir.glob("./active_services/*.rb").sort.each { |service|
-    require "#{service}"
+    require "./#{service}"
 }
 
 print "InfoNinja Service v1.1\n"
@@ -89,7 +89,17 @@ while (true)
             print("Error sending request #{url}\n")
         end
     }
-    # TODO: update backlight
+    # Update backlight (this could use better conflict resolution?)
+    backlight_mode = 0
+    threads.each { |thread|
+        requested_mode = thread.get_lcd_blink_mode()
+        backlight_mode = requested_mode if 0 != requested_mode
+    }
+    url = "http://#{infoninja_ip}/blinkmode?#{backlight_mode}"
+    if !do_request(url)
+        print("Error sending request #{url}\n")
+    end
+
     # TODO: resolve button LED conflict
     # TODO: resolve backlight blink conflict
 

@@ -32,7 +32,7 @@ TEXT_BUFFER_DEBUG = false
 # screen.  All threads share a common TextBuffer and can write into
 # it.  The master thread then sends updates out to your InfoNinja.
 # The base background color is shared among all threads with no
-# conflict resultion (unlike the light blink or background alert
+# conflict resolution (unlike the light blink or background alert
 # blink).  This means that the last thread to write it wins.
 # You're encouraged to just leave it white and use the 
 # get_lcd_blink_mode() function.
@@ -164,7 +164,7 @@ class ServiceThread
     end
     
     # Because several services may want to set the background LCD's
-    # blink mode to conflicting balues, the main thread will query each
+    # blink mode to conflicting values, the main thread will query each
     # service about the desired state.  See how get_button_led handles
     # this sort of conflict.
     # The return value is 0..6 -- matching the actual number send to
