@@ -79,6 +79,7 @@ class ServiceThreadJenkins < ServiceThread
                         if nil != activity && !activity.empty? && 'Building' == activity
                             @project_status[name] = activity
                         end
+                        #print "#{name} => #{@project_status[name]}\n" if JENKINS_SERVICE_DEBUG
                     }
                 end
             }
@@ -90,9 +91,9 @@ class ServiceThreadJenkins < ServiceThread
                 when 'Building'
                     entry << value[2]
                 when 'Success'
-                    entry << value[1]
+                    entry << value[0]
                 when 'Failure', 'Exception'
-                    entry << value[2]
+                    entry << value[1]
                     @currently_failing = true
                 when 'Unknown'
                     entry << '?'
