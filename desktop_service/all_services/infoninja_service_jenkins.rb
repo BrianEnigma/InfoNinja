@@ -107,7 +107,7 @@ class ServiceThreadJenkins < ServiceThread
             entry.strip!
             text_buffer.set_line(1, entry)
             print "Sleeping\n" if JENKINS_SERVICE_DEBUG
-            sleep(10 * 60)
+            sleep(60)
         end
     end
 
