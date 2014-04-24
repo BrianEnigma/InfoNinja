@@ -34,14 +34,15 @@ class ServiceThreadJenkins < ServiceThread
         ]
         # List of projects we care about mapped to pass/fail/building characters
         @project_list = {
-            "SockeyeTrunkQuick"             => ['q',  'Q',    '_'],
-            "SockeyeTrunkMedium"            => ['m',  'M',    '_'],
-            "Sockeye2_4Medium"              => ['24', '!24!', '_'],
-            "Windows_Debug_x64_CPU"         => ['w',  'W',    '_'],
-            "Windows_Debug_Live_x64_CPU"    => ['wl', 'WL',   '_'],
+            "SockeyeTrunkQuick"             => 'q',
+            "SockeyeTrunkMedium"            => 'm',
+            "Sockeye2_4Medium"              => '24',
+            "Windows_Debug_x64_CPU"         => 'w',
+            "Windows_Debug_Live_x64_CPU"    => 'wl',
         }
         # Last known project statuses
         @project_status = Hash.new
+        @project_activity = Hash.new
         @currently_failing = false
     end
     
@@ -76,8 +77,8 @@ class ServiceThreadJenkins < ServiceThread
                             @project_status[name] = status
                         end
                         # Overwrite it with 'Building' if we're building
-                        if nil != activity && !activity.empty? && 'Building' == activity
-                            @project_status[name] = activity
+                        if nil != activity && !activity.empty?
+                            @project_activity[name] = activity
                         end
                         #print "#{name} => #{@project_status[name]}\n" if JENKINS_SERVICE_DEBUG
                     }
@@ -87,13 +88,15 @@ class ServiceThreadJenkins < ServiceThread
             entry = ''
             @currently_failing = false
             @project_list.each { |name, value|
+                if 'Building' == @project_activity[name]
+                    entry << '*'
+                end
+                entry << value
                 case @project_status[name]
-                when 'Building'
-                    entry << value[2]
                 when 'Success'
-                    entry << value[0]
+                    entry << '_'
                 when 'Failure', 'Exception'
-                    entry << value[1]
+                    entry << '!'
                     @currently_failing = true
                 when 'Unknown'
                     entry << '?'
