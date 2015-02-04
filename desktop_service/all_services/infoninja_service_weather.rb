@@ -41,7 +41,11 @@ class ServiceThreadWeather < ServiceThread
             error_string = ''
             document = nil
             print "Fetching Weather update\n" if WEATHER_SERVICE_DEBUG
-            response = Net::HTTP.get(URI(@url))
+            begin
+                response = Net::HTTP.get(URI(@url))
+            rescue
+                response = ''
+            end
             if response.empty?
               entry = "Weather error"
             else

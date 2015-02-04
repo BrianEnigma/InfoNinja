@@ -30,15 +30,15 @@ class ServiceThreadJenkins < ServiceThread
         # Set these to the URL(s) your Jenkins server(s)
         @url_list = [
             "http://jenkins-eme:8080/cc.xml",
-            "http://jenkins-eme-win:8080/cc.xml",
+#            "http://jenkins-eme-win:8080/cc.xml",
         ]
         # List of projects we care about mapped to pass/fail/building characters
         @project_list = {
-            "SockeyeTrunkQuick"             => 'q',
-            "SockeyeTrunkMedium"            => 'm',
-            "Sockeye2_4Medium"              => '24',
-            "Windows_Debug_x64_CPU"         => 'w',
-            "Windows_Debug_Live_x64_CPU"    => 'wl',
+            "SockeyeTrunkQuick"             => 'Q',
+            "SockeyeTrunkMedium"            => 'M',
+#            "Sockeye2_4Medium"              => '24',
+#            "Windows_Debug_x64_CPU"         => 'w',
+#            "Windows_Debug_Live_x64_CPU"    => 'wl',
         }
         # Last known project statuses
         @project_status = Hash.new
@@ -55,7 +55,12 @@ class ServiceThreadJenkins < ServiceThread
             # Collect results
             @url_list.each { |url|
                 document = nil
-                response = Net::HTTP.get(URI(url))
+                begin
+                    response = Net::HTTP.get(URI(url))
+                rescue
+                    print "Error contacting Jenkins at #{url}\n" if JENKINS_SERVICE_DEBUG
+                    response = ''
+                end
                 if !response.empty?
                   begin
                     document = REXML::Document.new(response)
@@ -87,26 +92,31 @@ class ServiceThreadJenkins < ServiceThread
             # Turn results into command
             entry = ''
             @currently_failing = false
-            @project_list.each { |name, value|
-                if 'Building' == @project_activity[name]
-                    entry << '*'
-                end
-                entry << value
-                case @project_status[name]
-                when 'Success'
-                    entry << '_'
-                when 'Failure', 'Exception'
-                    entry << '!'
-                    @currently_failing = true
-                when 'Unknown'
-                    entry << '?'
-                    @currently_failing = true
-                else
-                    entry << '?'
-                    @currently_failing = true
-                end
-                entry << ' '
-            }
+            if @project_status.empty?
+                entry << 'Jenkins error'
+            else
+                @project_list.each { |name, value|
+                    entry << value
+                    entry << ':'
+                    if 'Building' == @project_activity[name]
+                        entry << 'run:'
+                    end
+                    case @project_status[name]
+                    when 'Success'
+                        entry << 'ok'
+                    when 'Failure', 'Exception'
+                        entry << '!!!'
+                        @currently_failing = true
+                    when 'Unknown'
+                        entry << '???'
+                        @currently_failing = true
+                    else
+                        entry << '?'
+                        @currently_failing = true
+                    end
+                    entry << ' '
+                }
+            end
             entry.strip!
             text_buffer.set_line(1, entry)
             print "Sleeping\n" if JENKINS_SERVICE_DEBUG
